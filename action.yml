@@ -1,0 +1,20 @@
+name: 'Issue Comment Reminder'
+description: 'Reminds an assignee when a comment is expected based on priority label'
+author: 'rob-derosa@github.com'
+branding:
+  icon: alert-triangle
+  color: red
+inputs:
+  priorities:
+    required: true
+    description: 'A comma delimited list of priority labels with amount of days (i.e. blocker=14,critical=30,important=60)'
+  buffer:
+    required: false
+    description: 'The amount of days prior to the assigned priority cutoff (i.e a parameter of 3 would include blocker issues with no comments within the last 11 days)'
+    default: '0'
+  github-token:
+    required: true
+    description: 'Your GitHub token'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

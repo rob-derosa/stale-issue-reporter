@@ -1,0 +1,13 @@
+name: 'Remind assignees'
+on:
+  workflow_dispatch
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        name: "Send reminders"
+        with:
+          priorities: "blocker=14,critical=30,important=60"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
