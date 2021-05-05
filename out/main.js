@@ -34,10 +34,9 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             var today = new Date();
-            //const prioritiesString = core.getInput("priorities", { required: true })
-            //const gitHubToken = core.getInput("github-token", { required: true })
-            const prioritiesString = "blocker=5,critical=10,important=60";
-            const gitHubToken = "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";
+            const prioritiesString = core.getInput("priorities", { required: true });
+            const buffer = parseInt(core.getInput("buffer", { required: false }));
+            const gitHubToken = core.getInput("github-token", { required: true });
             const context = github.context;
             const client = github.getOctokit(gitHubToken);
             const rules = prioritiesString.split(',');
@@ -46,24 +45,18 @@ function run() {
                 var arr = rule.split('=');
                 priorityRules.push({ label: arr[0], staleDays: parseInt(arr[1]) });
             });
-            const issues = yield client.paginate(client.rest.issues.listForRepo, {
-                owner: "githubcustomers",
-                repo: "LinkedIn",
-                // owner: context.repo.owner,
-                // repo: context.repo.repo,
-                per_page: 500,
-            });
+            const issues = yield client.rest.issues.listForRepo({ owner: context.repo.owner, repo: context.repo.repo });
             const staleIssues = new Array();
             for (const issue of issues) {
-                if (issue.state == "closed")
+                if (issue.state != "open")
                     continue;
                 for (const label of issue.labels) {
                     for (const rule of priorityRules) {
                         if (rule.label == label.name && issue.assignees.length > 0) {
                             let lastComment = {};
                             if (issue.comments > 0) {
-                                yield delay(1000);
-                                const data = yield client.rest.issues.listComments({ owner: "githubcustomers", repo: "linkedin", issue_number: issue.number });
+                                yield delay(1000); //Need to do real rate-limit failover
+                                const data = yield client.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number });
                                 let commentsDesc = data.data.reverse();
                                 commentsDesc.forEach((cm) => {
                                     issue.assignees.forEach((user) => {
@@ -86,7 +79,7 @@ function run() {
                             }
                             var diff = today.getTime() - dateToCheck.getTime();
                             let days = (diff / (60 * 60 * 24 * 1000));
-                            if (days >= staleIssue.priorityRule.staleDays) {
+                            if (days >= staleIssue.priorityRule.staleDays - buffer) {
                                 staleIssue.daysWithoutComment = Math.round(days);
                                 staleIssues.push(staleIssue);
                             }
@@ -95,14 +88,23 @@ function run() {
                     }
                 }
             }
+            let output = "## Prioritized Issues Needing a Status Update";
             for (const issue of staleIssues) {
                 let assignees = "";
                 issue.issue.assignees.forEach((user) => {
                     assignees += ", " + user.login;
                 });
                 assignees = assignees.substring(2);
-                let log = `Issue #${issue.issue.number} - ${issue.issue.html_url} - ${issue.priorityRule.label} - ${issue.daysWithoutComment} days without a comment - assigned to ${assignees}`;
-                console.log(log);
+                let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}):  ${issue.priorityRule.label} - ${issue.daysWithoutComment} days without a comment - assigned to @${assignees}`;
+                output += log;
+            }
+            if (staleIssues.length > 0) {
+                let gist = yield client.gists.create({ description: "Stale Issues Needing a Status Update", files: { ["stale-issues-report.md"]: { content: output.toString() } } });
+                console.log("Stale Report Url: " + gist.data.html_url);
+                core.setOutput("report-url", gist.data.html_url);
+            }
+            else {
+                console.log("No results, therefore no report.");
             }
         }
         catch (error) {

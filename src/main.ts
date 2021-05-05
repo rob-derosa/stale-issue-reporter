@@ -1,6 +1,5 @@
 import * as core from "@actions/core";
 import * as github from '@actions/github'
-import { cpuUsage } from "process";
 
 type StaleIssue = {
   issue: any;
@@ -46,7 +45,7 @@ async function run(): Promise<void> {
 
             let lastComment = {} as any;
             if (issue.comments > 0) {
-              await delay(1000);
+              await delay(1000); //Need to do real rate-limit failover
               const data = await client.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number })
               let commentsDesc = data.data.reverse();
 
@@ -104,10 +103,8 @@ async function run(): Promise<void> {
       console.log("Stale Report Url: " + gist.data.html_url);
       core.setOutput("report-url", gist.data.html_url);
     } else {
-      console.log("No results, therefor no report.");
+      console.log("No results, therefore no report.");
     }
-
-
   } catch (error) {
     console.log(error);
     core.setFailed(error.message)
