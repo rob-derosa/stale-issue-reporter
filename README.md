@@ -4,7 +4,7 @@ Generates a gist report of issues with a label of `blocker`, `critical` or `impo
 
 ## Sample Usage
 
-```
+```yaml
 name: 'Remind assignees'
 on:
   workflow_dispatch
