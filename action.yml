@@ -15,6 +15,9 @@ inputs:
   github-token:
     required: true
     description: 'A PAT that has the ability to read repos and post gists'
+outputs:
+  report-url:
+      description: 'A url to the generated gist report'
 runs:
   using: 'node12'
   main: 'dist/index.js'
