@@ -110,7 +110,7 @@ async function run(): Promise<void> {
     for (const issue of sortedIssues) {
       if(lastPriority != issue.priorityRule.label){
         lastPriority = issue.priorityRule.label;
-        output += `### ${lastPriority}\n`;
+        output += `\n### ${lastPriority}`;
       }
 
       let assignees = "";
@@ -120,7 +120,7 @@ async function run(): Promise<void> {
 
       assignees = assignees.substring(2);
 
-      let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}): ${issue.daysWithoutComment} days without a status update - assigned to ${assignees}`;
+      let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}): ~${issue.daysWithoutComment} days without a status update - assigned to ${assignees}`;
       output += log;
     }
 

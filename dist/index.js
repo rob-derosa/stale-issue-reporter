@@ -962,14 +962,14 @@ function run() {
             for (const issue of sortedIssues) {
                 if (lastPriority != issue.priorityRule.label) {
                     lastPriority = issue.priorityRule.label;
-                    output += `### ${lastPriority}\n`;
+                    output += `\n### ${lastPriority}`;
                 }
                 let assignees = "";
                 issue.issue.assignees.forEach((user) => {
                     assignees += `, [${user.login}](https://github.com/${user.login})`;
                 });
                 assignees = assignees.substring(2);
-                let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}): ${issue.daysWithoutComment} days without a status update - assigned to ${assignees}`;
+                let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}): ~${issue.daysWithoutComment} days without a status update - assigned to ${assignees}`;
                 output += log;
             }
             if (staleIssues.length > 0) {
