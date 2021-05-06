@@ -18,7 +18,7 @@ jobs:
         with:
           priorities: "blocker=14,critical=30,important=60"
           buffer: 3
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GIST_PAT }}
 ```
 
 ## License

@@ -14,7 +14,7 @@ inputs:
     default: '0'
   github-token:
     required: true
-    description: 'Your GitHub token'
+    description: 'A PAT that has the ability to read repos and post gists'
 runs:
   using: 'node12'
   main: 'dist/index.js'
