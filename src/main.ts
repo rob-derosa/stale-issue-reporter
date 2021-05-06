@@ -11,6 +11,7 @@ type StaleIssue = {
 type PriorityRule = {
   label: string;
   staleDays: number;
+  rank: number;
 }
 
 async function run(): Promise<void> {
@@ -27,15 +28,17 @@ async function run(): Promise<void> {
     const rules = labelsString.split(',');
     const priorityRules = new Array<PriorityRule>();
 
+    let rank = 0;
     rules.forEach(rule => {
       var arr = rule.split('=');
-      priorityRules.push({ label: arr[0], staleDays: parseInt(arr[1]) })
+      priorityRules.push({ label: arr[0], staleDays: parseInt(arr[1]), rank: rank });
+      rank++;
     });
 
     const issues = await client.paginate(client.rest.issues.listForRepo, {
       owner: context.repo.owner,
       repo: context.repo.repo,
-      per_page: 200,
+      per_page: 500,
     });
 
     const staleIssues = new Array<StaleIssue>();
@@ -49,7 +52,7 @@ async function run(): Promise<void> {
 
             let lastComment = {} as any;
             if (issue.comments > 0) {
-              await delay(1000); //Need to do real rate-limit failover
+              await delay(1000); //Need to do legit rate-limit failover
               const data = await client.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number })
               let commentsDesc = data.data.reverse();
 
@@ -89,8 +92,27 @@ async function run(): Promise<void> {
       }
     }
 
+        //Sort based on label order
+    var sortedIssues: StaleIssue[] = staleIssues.sort((n1, n2) => {
+      if (n1.priorityRule.rank > n2.priorityRule.rank) {
+        return 1;
+      }
+
+      if (n1.priorityRule.rank < n2.priorityRule.rank) {
+        return -1;
+      }
+
+      return 0;
+    });
+
     let output = "## Prioritized Issues Needing a Status Update";
-    for (const issue of staleIssues) {
+    let lastPriority;
+    for (const issue of sortedIssues) {
+      if(lastPriority != issue.priorityRule.label){
+        lastPriority = issue.priorityRule.label;
+        output += `### ${lastPriority}\n`;
+      }
+
       let assignees = "";
       issue.issue.assignees.forEach((user:any) => {
         assignees += `, [${user.login}](https://github.com/${user.login})`;
@@ -98,7 +120,7 @@ async function run(): Promise<void> {
 
       assignees = assignees.substring(2);
 
-      let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}):  ${issue.priorityRule.label} - ${issue.daysWithoutComment} days without a comment - assigned to ${assignees}`;
+      let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}): ${issue.daysWithoutComment} days without a status update - assigned to ${assignees}`;
       output += log;
     }
 

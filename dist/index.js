@@ -894,14 +894,16 @@ function run() {
             const client = github.getOctokit(gitHubToken);
             const rules = labelsString.split(',');
             const priorityRules = new Array();
+            let rank = 0;
             rules.forEach(rule => {
                 var arr = rule.split('=');
-                priorityRules.push({ label: arr[0], staleDays: parseInt(arr[1]) });
+                priorityRules.push({ label: arr[0], staleDays: parseInt(arr[1]), rank: rank });
+                rank++;
             });
             const issues = yield client.paginate(client.rest.issues.listForRepo, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                per_page: 200,
+                per_page: 500,
             });
             const staleIssues = new Array();
             for (const issue of issues) {
@@ -912,7 +914,7 @@ function run() {
                         if (rule.label == label.name && issue.assignees.length > 0) {
                             let lastComment = {};
                             if (issue.comments > 0) {
-                                yield delay(1000); //Need to do real rate-limit failover
+                                yield delay(1000); //Need to do legit rate-limit failover
                                 const data = yield client.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number });
                                 let commentsDesc = data.data.reverse();
                                 commentsDesc.forEach((cm) => {
@@ -945,14 +947,29 @@ function run() {
                     }
                 }
             }
+            //Sort based on label order
+            var sortedIssues = staleIssues.sort((n1, n2) => {
+                if (n1.priorityRule.rank > n2.priorityRule.rank) {
+                    return 1;
+                }
+                if (n1.priorityRule.rank < n2.priorityRule.rank) {
+                    return -1;
+                }
+                return 0;
+            });
             let output = "## Prioritized Issues Needing a Status Update";
-            for (const issue of staleIssues) {
+            let lastPriority;
+            for (const issue of sortedIssues) {
+                if (lastPriority != issue.priorityRule.label) {
+                    lastPriority = issue.priorityRule.label;
+                    output += `### ${lastPriority}\n`;
+                }
                 let assignees = "";
                 issue.issue.assignees.forEach((user) => {
                     assignees += `, [${user.login}](https://github.com/${user.login})`;
                 });
                 assignees = assignees.substring(2);
-                let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}):  ${issue.priorityRule.label} - ${issue.daysWithoutComment} days without a comment - assigned to ${assignees}`;
+                let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}): ${issue.daysWithoutComment} days without a status update - assigned to ${assignees}`;
                 output += log;
             }
             if (staleIssues.length > 0) {
