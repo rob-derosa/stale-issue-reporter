@@ -898,7 +898,11 @@ function run() {
                 var arr = rule.split('=');
                 priorityRules.push({ label: arr[0], staleDays: parseInt(arr[1]) });
             });
-            const issues = yield client.rest.issues.listForRepo({ owner: context.repo.owner, repo: context.repo.repo });
+            const issues = yield client.paginate(client.rest.issues.listForRepo, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 200,
+            });
             const staleIssues = new Array();
             for (const issue of issues) {
                 if (issue.state != "open")

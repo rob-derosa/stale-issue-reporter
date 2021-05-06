@@ -32,7 +32,11 @@ async function run(): Promise<void> {
       priorityRules.push({ label: arr[0], staleDays: parseInt(arr[1]) })
     });
 
-    const issues = await client.rest.issues.listForRepo({ owner: context.repo.owner, repo: context.repo.repo });
+    const issues = await client.paginate(client.rest.issues.listForRepo, {
+      owner: context.repo.owner,
+      repo: context.repo.repo,
+      per_page: 200,
+    });
 
     const staleIssues = new Array<StaleIssue>();
     for (const issue of issues) {
