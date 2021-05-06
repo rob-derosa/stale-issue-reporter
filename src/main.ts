@@ -106,7 +106,7 @@ async function run(): Promise<void> {
     });
 
     const repo = `${context.repo.owner}/${context.repo.repo}`;
-    let output = `## Stale issues as of ${new Date().toLocaleDateString('en-US')} for [${repo}](${repo})`;
+    let output = `## Stale issues as of ${new Date().toLocaleDateString('en-US')} for [${repo}](https://github.com/${repo})`;
     let lastPriority;
     for (const issue of sortedIssues) {
       if (lastPriority != issue.priorityRule.label) {
