@@ -970,7 +970,7 @@ function run() {
                     assignees += `, [${user.login}](https://github.com/${user.login})`;
                 });
                 assignees = assignees.substring(2);
-                let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}): ${issue.daysWithoutComment} days without a status update - assigned to ${assignees}`;
+                let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}): stale for ${issue.daysWithoutComment} days - assigned to ${assignees}`;
                 output += log;
             }
             if (staleIssues.length > 0) {
