@@ -957,7 +957,7 @@ function run() {
                 }
                 return 0;
             });
-            let output = "## Prioritized Issues Needing a Status Update";
+            let output = "## Labeled Issues Needing a Status Update";
             let lastPriority;
             for (const issue of sortedIssues) {
                 if (lastPriority != issue.priorityRule.label) {
