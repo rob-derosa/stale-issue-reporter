@@ -949,10 +949,10 @@ function run() {
             for (const issue of staleIssues) {
                 let assignees = "";
                 issue.issue.assignees.forEach((user) => {
-                    assignees += ", " + user.login;
+                    assignees += `, [${user.login}](https://github.com/${user.login})`;
                 });
                 assignees = assignees.substring(2);
-                let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}):  ${issue.priorityRule.label} - ${issue.daysWithoutComment} days without a comment - assigned to @${assignees}`;
+                let log = `\n* [Issue #${issue.issue.number}](${issue.issue.html_url}):  ${issue.priorityRule.label} - ${issue.daysWithoutComment} days without a comment - assigned to ${assignees}`;
                 output += log;
             }
             if (staleIssues.length > 0) {
