@@ -92,7 +92,7 @@ async function run(): Promise<void> {
       }
     }
 
-        //Sort based on label order
+    //Sort based on label order
     var sortedIssues: StaleIssue[] = staleIssues.sort((n1, n2) => {
       if (n1.priorityRule.rank > n2.priorityRule.rank) {
         return 1;
@@ -105,16 +105,17 @@ async function run(): Promise<void> {
       return 0;
     });
 
-    let output = "## Issues Needing a Status Update";
+    const repo = `${context.repo.owner}/${context.repo.repo}`;
+    let output = `## Stale issues as of ${new Date().toLocaleDateString('en-US')} for [${repo}](${repo})`;
     let lastPriority;
     for (const issue of sortedIssues) {
-      if(lastPriority != issue.priorityRule.label){
+      if (lastPriority != issue.priorityRule.label) {
         lastPriority = issue.priorityRule.label;
         output += `\n### ${lastPriority}`;
       }
 
       let assignees = "";
-      issue.issue.assignees.forEach((user:any) => {
+      issue.issue.assignees.forEach((user: any) => {
         assignees += `, [${user.login}](https://github.com/${user.login})`;
       });
 
@@ -124,8 +125,8 @@ async function run(): Promise<void> {
       output += log;
     }
 
-    if(staleIssues.length > 0) {
-      let gist = await client.gists.create({ description: "Stale Prioritized Issues", files: { [ "stale-issues-report.md"] : {content: output.toString()}}});
+    if (staleIssues.length > 0) {
+      let gist = await client.gists.create({ description: "Stale Prioritized Issues", files: { ["stale-issues-report.md"]: { content: output.toString() } } });
       console.log("Stale Issues Report Url: " + gist.data.html_url);
       core.setOutput("report-url", gist.data.html_url);
     } else {
