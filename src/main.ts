@@ -105,7 +105,7 @@ async function run(): Promise<void> {
       return 0;
     });
 
-    let output = "## Labeled Issues Needing a Status Update";
+    let output = "## Issues Needing a Status Update";
     let lastPriority;
     for (const issue of sortedIssues) {
       if(lastPriority != issue.priorityRule.label){
