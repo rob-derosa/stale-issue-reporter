@@ -7,7 +7,7 @@ A URL of the new gist will be output and show in the log.
 ## Sample Usage
 
 ```yaml
-name: 'Remind assignees'
+name: 'Generate stale issues report'
 on:
   workflow_dispatch
 jobs:
@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: rob-derosa/issue-comment-reminder@main
-        name: "Send reminders"
+      - uses: ./
+        name: "generate report of stale issues"
         with:
-          priorities: "blocker=14,critical=30,important=60"
+          labels: "blocker=14,critical=30,important=60"
           buffer: 3
           github-token: ${{ secrets.GIST_PAT }}
 ```
