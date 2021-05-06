@@ -18,13 +18,13 @@ async function run(): Promise<void> {
 
     var today = new Date();
 
-    const prioritiesString = core.getInput("priorities", { required: true });
+    const labelsString = core.getInput("labels", { required: true });
     const buffer = parseInt(core.getInput("buffer", { required: false }));
     const gitHubToken = core.getInput("github-token", { required: true });
     const context = github.context;
 
     const client = github.getOctokit(gitHubToken);
-    const rules = prioritiesString.split(',');
+    const rules = labelsString.split(',');
     const priorityRules = new Array<PriorityRule>();
 
     rules.forEach(rule => {
@@ -99,8 +99,8 @@ async function run(): Promise<void> {
     }
 
     if(staleIssues.length > 0) {
-      let gist = await client.gists.create({ description: "Stale Issues Needing a Status Update", files: { [ "stale-issues-report.md"] : {content: output.toString()}}});
-      console.log("Stale Report Url: " + gist.data.html_url);
+      let gist = await client.gists.create({ description: "Stale Prioritized Issues", files: { [ "stale-issues-report.md"] : {content: output.toString()}}});
+      console.log("Stale Issues Report Url: " + gist.data.html_url);
       core.setOutput("report-url", gist.data.html_url);
     } else {
       console.log("No results, therefore no report.");

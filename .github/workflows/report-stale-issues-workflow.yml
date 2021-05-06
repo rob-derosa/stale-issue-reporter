@@ -1,0 +1,14 @@
+name: 'Generate stale issues report'
+on:
+  workflow_dispatch
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./
+        name: "generate report of stale issues"
+        with:
+          labels: "blocker=14,critical=30,important=60"
+          buffer: 3
+          github-token: ${{ secrets.ISSUE_PAT }}
