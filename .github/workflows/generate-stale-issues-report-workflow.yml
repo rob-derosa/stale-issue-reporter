@@ -1,4 +1,4 @@
-name: 'Generate stale issues report'
+name: 'Stale issues report'
 on:
   workflow_dispatch
 jobs:
@@ -7,7 +7,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: ./
-        name: "generate report of stale issues"
+        name: "Generate report of stale issues"
         with:
           labels: "blocker=14,critical=30,important=60"
           buffer: 3
